@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import CometCard from "@/src/components/CometCard";
 
 // Floating background blobs component for organic visual depth
 const FloatingBlobs = () => (
@@ -293,150 +294,165 @@ export default function LandingPage() {
             {/* Visual Box Behind */}
             <div className="absolute -inset-4 rounded-3xl bg-gradient-to-tr from-tea-green/20 to-papaya-whip/50 opacity-70 blur-xl" />
 
-            <motion.div
-              animate={{ y: [0, -12, 0] }}
-              transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-              className="relative w-full max-w-[420px] rounded-3xl border border-white/40 bg-white/30 p-5 shadow-2xl backdrop-blur-md"
+            <CometCard
+              className="w-full max-w-[420px]"
+              scaleFactor={1.03}
+              rotateDepth={12}
+              translateDepth={10}
             >
-              {/* Job Requirements Box Header */}
-              <div className="mb-4 rounded-xl border border-white/50 bg-[#e9edc9]/50 p-3 shadow-inner">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Briefcase className="h-4 w-4 text-light-bronze" />
-                    <span className="text-xs font-black tracking-tight text-slate-900">
-                      Target Role: Senior AI Engineer
+              <motion.div
+                animate={{ y: [0, -12, 0] }}
+                transition={{
+                  repeat: Infinity,
+                  duration: 6,
+                  ease: "easeInOut",
+                }}
+                className="relative w-full rounded-3xl border border-white/40 bg-white/30 p-5 shadow-2xl backdrop-blur-md"
+              >
+                {/* Job Requirements Box Header */}
+                <div className="mb-4 rounded-xl border border-white/50 bg-[#e9edc9]/50 p-3 shadow-inner">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="h-4 w-4 text-light-bronze" />
+                      <span className="text-xs font-black tracking-tight text-slate-900">
+                        Target Role: Senior AI Engineer
+                      </span>
+                    </div>
+                    <span className="rounded-full bg-light-bronze/10 px-2 py-0.5 text-[9px] font-bold text-light-bronze">
+                      Active Matcher
                     </span>
                   </div>
-                  <span className="rounded-full bg-light-bronze/10 px-2 py-0.5 text-[9px] font-bold text-light-bronze">
-                    Active Matcher
-                  </span>
-                </div>
-                <div className="mt-2 flex flex-wrap gap-1">
-                  <span className="rounded bg-white/70 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 border border-white/30">
-                    TypeScript
-                  </span>
-                  <span className="rounded bg-white/70 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 border border-white/30">
-                    Next.js 14+
-                  </span>
-                  <span className="rounded bg-white/70 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 border border-white/30">
-                    Framer Motion
-                  </span>
-                </div>
-              </div>
-
-              {/* CV Wrapper representing the transformation */}
-              <div className="relative rounded-2xl border border-white/40 bg-white/80 p-4 shadow-md overflow-hidden">
-                {/* Scanner bar animation */}
-                <motion.div
-                  animate={{ top: ["0%", "100%", "0%"] }}
-                  transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-                  className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-light-bronze to-transparent opacity-80"
-                  style={{ top: "0%" }}
-                />
-
-                <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-                  <div className="h-8 w-8 rounded-full bg-tea-green/80 flex items-center justify-center text-xs font-black">
-                    JD
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900">
-                      John Doe
-                    </h4>
-                    <p className="text-[10px] text-slate-500">
-                      Frontend & AI Systems Developer
-                    </p>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    <span className="rounded bg-white/70 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 border border-white/30">
+                      TypeScript
+                    </span>
+                    <span className="rounded bg-white/70 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 border border-white/30">
+                      Next.js 14+
+                    </span>
+                    <span className="rounded bg-white/70 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 border border-white/30">
+                      Framer Motion
+                    </span>
                   </div>
                 </div>
 
-                <div className="mt-4 space-y-3.5">
-                  {/* Experience item 1 */}
-                  <div>
-                    <div className="flex justify-between items-center">
-                      <h5 className="text-[10px] font-bold text-slate-900">
-                        Lead Web Developer
-                      </h5>
-                      <span className="text-[9px] text-slate-400">
-                        2023 - Present
-                      </span>
+                {/* CV Wrapper representing the transformation */}
+                <div className="relative rounded-2xl border border-white/40 bg-white/80 p-4 shadow-md overflow-hidden">
+                  {/* Scanner bar animation */}
+                  <motion.div
+                    animate={{ top: ["0%", "100%", "0%"] }}
+                    transition={{
+                      repeat: Infinity,
+                      duration: 4,
+                      ease: "linear",
+                    }}
+                    className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-light-bronze to-transparent opacity-80"
+                    style={{ top: "0%" }}
+                  />
+
+                  <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
+                    <div className="h-8 w-8 rounded-full bg-tea-green/80 flex items-center justify-center text-xs font-black">
+                      JD
                     </div>
-                    {/* Skeleton bullet points transforming */}
-                    <div className="mt-2.5 space-y-2">
-                      <div className="flex items-start gap-1.5">
-                        <motion.div
-                          animate={{ scale: [1, 1.2, 1] }}
-                          transition={{
-                            repeat: Infinity,
-                            duration: 4,
-                            delay: 0.5,
-                          }}
-                        >
-                          <CheckCircle2 className="h-3 w-3 mt-0.5 text-emerald-600 flex-shrink-0" />
-                        </motion.div>
-                        <p className="text-[10px] text-slate-600 leading-normal">
-                          Built responsive dashboards using{" "}
-                          <span className="font-bold text-emerald-700 bg-tea-green/40 px-1 rounded">
-                            Next.js 14+
-                          </span>
-                          , resulting in a 40% performance gain.
-                        </p>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-900">
+                        John Doe
+                      </h4>
+                      <p className="text-[10px] text-slate-500">
+                        Frontend & AI Systems Developer
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 space-y-3.5">
+                    {/* Experience item 1 */}
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <h5 className="text-[10px] font-bold text-slate-900">
+                          Lead Web Developer
+                        </h5>
+                        <span className="text-[9px] text-slate-400">
+                          2023 - Present
+                        </span>
                       </div>
+                      {/* Skeleton bullet points transforming */}
+                      <div className="mt-2.5 space-y-2">
+                        <div className="flex items-start gap-1.5">
+                          <motion.div
+                            animate={{ scale: [1, 1.2, 1] }}
+                            transition={{
+                              repeat: Infinity,
+                              duration: 4,
+                              delay: 0.5,
+                            }}
+                          >
+                            <CheckCircle2 className="h-3 w-3 mt-0.5 text-emerald-600 flex-shrink-0" />
+                          </motion.div>
+                          <p className="text-[10px] text-slate-600 leading-normal">
+                            Built responsive dashboards using{" "}
+                            <span className="font-bold text-emerald-700 bg-tea-green/40 px-1 rounded">
+                              Next.js 14+
+                            </span>
+                            , resulting in a 40% performance gain.
+                          </p>
+                        </div>
 
-                      <div className="flex items-start gap-1.5">
-                        <motion.div
-                          animate={{ scale: [1, 1.2, 1] }}
-                          transition={{
-                            repeat: Infinity,
-                            duration: 4,
-                            delay: 1,
-                          }}
-                        >
-                          <CheckCircle2 className="h-3 w-3 mt-0.5 text-emerald-600 flex-shrink-0" />
-                        </motion.div>
-                        <p className="text-[10px] text-slate-600 leading-normal">
-                          Engineered fluid transitions and keyframe layouts
-                          using{" "}
-                          <span className="font-bold text-emerald-700 bg-tea-green/40 px-1 rounded">
-                            Framer Motion
-                          </span>{" "}
-                          to increase user session duration.
-                        </p>
+                        <div className="flex items-start gap-1.5">
+                          <motion.div
+                            animate={{ scale: [1, 1.2, 1] }}
+                            transition={{
+                              repeat: Infinity,
+                              duration: 4,
+                              delay: 1,
+                            }}
+                          >
+                            <CheckCircle2 className="h-3 w-3 mt-0.5 text-emerald-600 flex-shrink-0" />
+                          </motion.div>
+                          <p className="text-[10px] text-slate-600 leading-normal">
+                            Engineered fluid transitions and keyframe layouts
+                            using{" "}
+                            <span className="font-bold text-emerald-700 bg-tea-green/40 px-1 rounded">
+                              Framer Motion
+                            </span>{" "}
+                            to increase user session duration.
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Experience item 2 */}
-                  <div className="opacity-60">
-                    <div className="flex justify-between items-center">
-                      <h5 className="text-[10px] font-bold text-slate-900">
-                        Software Developer
-                      </h5>
-                      <span className="text-[9px] text-slate-400">
-                        2021 - 2023
-                      </span>
+                    {/* Experience item 2 */}
+                    <div className="opacity-60">
+                      <div className="flex justify-between items-center">
+                        <h5 className="text-[10px] font-bold text-slate-900">
+                          Software Developer
+                        </h5>
+                        <span className="text-[9px] text-slate-400">
+                          2021 - 2023
+                        </span>
+                      </div>
+                      <div className="mt-1 h-1.5 w-full rounded bg-slate-200" />
+                      <div className="mt-1 h-1.5 w-5/6 rounded bg-slate-200" />
                     </div>
-                    <div className="mt-1 h-1.5 w-full rounded bg-slate-200" />
-                    <div className="mt-1 h-1.5 w-5/6 rounded bg-slate-200" />
                   </div>
-                </div>
 
-                {/* Score badge popping up */}
-                <motion.div
-                  initial={{ scale: 0.7, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{
-                    delay: 1,
-                    duration: 0.5,
-                    repeat: Infinity,
-                    repeatType: "reverse",
-                    repeatDelay: 3,
-                  }}
-                  className="absolute bottom-2 right-2 rounded-lg bg-emerald-600 px-2 py-1 text-[10px] font-black text-white shadow-md flex items-center gap-1"
-                >
-                  <TrendingUp className="h-3 w-3" />
-                  ATS: 98%
-                </motion.div>
-              </div>
-            </motion.div>
+                  {/* Score badge popping up */}
+                  <motion.div
+                    initial={{ scale: 0.7, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{
+                      delay: 1,
+                      duration: 0.5,
+                      repeat: Infinity,
+                      repeatType: "reverse",
+                      repeatDelay: 3,
+                    }}
+                    className="absolute bottom-2 right-2 rounded-lg bg-emerald-600 px-2 py-1 text-[10px] font-black text-white shadow-md flex items-center gap-1"
+                  >
+                    <TrendingUp className="h-3 w-3" />
+                    ATS: 98%
+                  </motion.div>
+                </div>
+              </motion.div>
+            </CometCard>
           </div>
         </div>
       </section>
