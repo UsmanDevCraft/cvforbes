@@ -6,15 +6,7 @@ import {
   useTransform,
 } from "framer-motion";
 import { useRef } from "react";
-
-type Props = {
-  rotateDepth?: number;
-  translateDepth?: number;
-  glareOpacity?: number;
-  scaleFactor?: number;
-  className?: string;
-  children: React.ReactNode;
-};
+import { Props } from "../types/cv_template";
 
 const CometCard = ({
   rotateDepth = 17.5,

@@ -37,3 +37,12 @@ export interface PDFPreviewPanelProps {
   coverLetterText: string;
   activePreviewTab: "cv" | "cl";
 }
+
+export type Props = {
+  rotateDepth?: number;
+  translateDepth?: number;
+  glareOpacity?: number;
+  scaleFactor?: number;
+  className?: string;
+  children: React.ReactNode;
+};
