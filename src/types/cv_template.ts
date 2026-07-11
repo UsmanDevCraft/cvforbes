@@ -26,3 +26,8 @@ export interface FinalTailoredOutput {
   cv: TailoredCV;
   cover_letter: string;
 }
+
+export interface CoverLetterDocumentProps {
+  cv: TailoredCV;
+  coverLetterText: string;
+}

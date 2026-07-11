@@ -1,15 +1,363 @@
 "use client";
 
-import React, { useState } from "react";
-import { PDFDownloadLink } from "@react-pdf/renderer";
-import { FinalTailoredOutput } from "../../types/cv_template";
+import React, { useState, useEffect } from "react";
+import { usePDF, PDFDownloadLink } from "@react-pdf/renderer";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Sparkles,
+  FileText,
+  ArrowRight,
+  UploadCloud,
+  Check,
+  X,
+  FileCheck,
+  TrendingUp,
+  ArrowLeft,
+  Copy,
+  Download,
+  ChevronDown,
+} from "lucide-react";
+import Link from "next/link";
+import { FinalTailoredOutput, TailoredCV } from "../../types/cv_template";
 import { CVDocument } from "../../components/CvDocument";
+import { CoverLetterDocument } from "../../components/CoverLetterDocument";
+
+// Organic floating background blobs matching landing page
+const FloatingBlobs = () => (
+  <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+    <div className="absolute top-[10%] left-[5%] w-[35rem] h-[35rem] rounded-full bg-tea-green/20 blur-[120px] animate-pulse duration-[8000ms]" />
+    <div className="absolute top-[30%] right-[10%] w-[30rem] h-[30rem] rounded-full bg-papaya-whip/40 blur-[100px] animate-pulse duration-[10000ms]" />
+    <div className="absolute bottom-[20%] left-[15%] w-[40rem] h-[40rem] rounded-full bg-beige/30 blur-[130px] animate-pulse duration-[12000ms]" />
+  </div>
+);
+
+// Progress loading state with step-by-step scanner checking
+const LoadingScreen = () => {
+  const steps = [
+    "Reading uploaded CV file...",
+    "Extracting experience and skills...",
+    "Analyzing target job requirements...",
+    "Rewriting bullet points (X-Y-Z formula)...",
+    "Generating cover letter context...",
+    "Compiling tailored PDF and assets...",
+  ];
+  const [currentStep, setCurrentStep] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentStep((prev) => (prev < steps.length - 1 ? prev + 1 : prev));
+    }, 1500);
+    return () => clearInterval(interval);
+  }, [steps.length]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      className="max-w-xl mx-auto border border-white/50 bg-white/30 backdrop-blur-md rounded-3xl p-8 shadow-2xl text-center space-y-6"
+    >
+      <div className="relative w-24 h-24 mx-auto bg-light-bronze/10 rounded-full flex items-center justify-center">
+        <div className="absolute inset-0 rounded-full border-2 border-light-bronze border-t-transparent animate-spin" />
+        <Sparkles className="h-10 w-10 text-light-bronze animate-pulse" />
+      </div>
+
+      <div className="space-y-2">
+        <h3 className="text-xl font-bold text-slate-900">
+          Tailoring Your Assets
+        </h3>
+        <p className="text-sm text-slate-500">
+          Please wait. Our AI is optimizing your profile for the target role.
+        </p>
+      </div>
+
+      <div className="text-left space-y-3 bg-white/50 rounded-2xl p-6 border border-white/30">
+        {steps.map((step, idx) => (
+          <div
+            key={idx}
+            className="flex items-center gap-3 text-xs font-semibold"
+          >
+            {idx < currentStep ? (
+              <div className="h-5 w-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+                <Check className="h-3 w-3" />
+              </div>
+            ) : idx === currentStep ? (
+              <div className="h-5 w-5 rounded-full border-2 border-light-bronze border-t-transparent animate-spin" />
+            ) : (
+              <div className="h-5 w-5 rounded-full bg-slate-100 border border-slate-200" />
+            )}
+            <span
+              className={
+                idx === currentStep
+                  ? "text-slate-900 font-bold"
+                  : idx < currentStep
+                    ? "text-slate-500 line-through"
+                    : "text-slate-400"
+              }
+            >
+              {step}
+            </span>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+};
+
+// Client-side PDF dynamic previewer to prevent SSR errors
+interface PDFPreviewPanelProps {
+  cv: TailoredCV;
+  coverLetterText: string;
+  activePreviewTab: "cv" | "cl";
+}
+
+const PDFPreviewPanel = ({
+  cv,
+  coverLetterText,
+  activePreviewTab,
+}: PDFPreviewPanelProps) => {
+  const [cvPdf, updateCvPdf] = usePDF({
+    document: <CVDocument data={cv} />,
+  });
+
+  const [clPdf, updateClPdf] = usePDF({
+    document: <CoverLetterDocument cv={cv} coverLetterText={coverLetterText} />,
+  });
+
+  // Re-generate PDFs if parameters modify
+  useEffect(() => {
+    updateCvPdf(<CVDocument data={cv} />);
+    updateClPdf(
+      <CoverLetterDocument cv={cv} coverLetterText={coverLetterText} />,
+    );
+  }, [cv, coverLetterText, updateCvPdf, updateClPdf]);
+
+  const activePdf = activePreviewTab === "cv" ? cvPdf : clPdf;
+
+  if (activePdf.loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[600px] bg-white/40 backdrop-blur-md rounded-3xl border border-white/50 shadow-inner">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-light-bronze" />
+        <p className="mt-4 text-sm font-bold text-slate-600">
+          Compiling live PDF view...
+        </p>
+      </div>
+    );
+  }
+
+  if (activePdf.error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[600px] bg-white/40 backdrop-blur-md rounded-3xl border border-white/50 text-red-500 p-6 text-center">
+        <p className="font-bold text-sm">Error compiling PDF preview</p>
+        <p className="text-xs mt-1 opacity-70">{activePdf.error.toString()}</p>
+        <button
+          onClick={() => {
+            updateCvPdf(<CVDocument data={cv} />);
+            updateClPdf(
+              <CoverLetterDocument cv={cv} coverLetterText={coverLetterText} />,
+            );
+          }}
+          className="mt-4 bg-light-bronze text-white text-xs px-3 py-1.5 rounded-lg font-bold"
+        >
+          Retry Preview Render
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-[600px] bg-white/40 backdrop-blur-md rounded-3xl border border-white/50 overflow-hidden shadow-inner flex flex-col relative">
+      {activePdf.url ? (
+        <iframe
+          src={`${activePdf.url}#toolbar=0&navpanes=0`}
+          className="w-full h-full border-none"
+          title="PDF Document Preview"
+        />
+      ) : (
+        <div className="flex items-center justify-center h-full text-slate-500">
+          No PDF preview available.
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function CvCreationPage() {
   const [file, setFile] = useState<File | null>(null);
   const [jobDesc, setJobDesc] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<FinalTailoredOutput | null>(null);
+
+  // UI state hooks
+  const [isMounted, setIsMounted] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [downloadDropdownOpen, setDownloadDropdownOpen] = useState(false);
+  const [activeReviewTab, setActiveReviewTab] = useState<"cv" | "cl">("cv");
+  const [activePreviewTab, setActivePreviewTab] = useState<"cv" | "cl">("cv");
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsMounted(true);
+  }, []);
+
+  const handleReviewTabChange = (tab: "cv" | "cl") => {
+    setActiveReviewTab(tab);
+    setActivePreviewTab(tab); // Synchronize document preview automatically for ease of use
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const droppedFile = e.dataTransfer.files[0];
+      if (
+        droppedFile.type === "application/pdf" ||
+        droppedFile.name.endsWith(".pdf")
+      ) {
+        setFile(droppedFile);
+      } else {
+        alert("Only PDF files are supported!");
+      }
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      if (
+        selectedFile.type === "application/pdf" ||
+        selectedFile.name.endsWith(".pdf")
+      ) {
+        setFile(selectedFile);
+      } else {
+        alert("Only PDF files are supported!");
+      }
+    }
+  };
+
+  const handleCopy = () => {
+    if (!result) return;
+    navigator.clipboard.writeText(result.cover_letter);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Convert Cover Letter text to professional Microsoft Word compatible HTML blob format
+  const handleDownloadDoc = () => {
+    if (!result) return;
+    const formattedDate = new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const paragraphs = result.cover_letter
+      .split(/\n\s*\n/)
+      .map((p) => p.trim())
+      .filter((p) => p.length > 0);
+
+    const contactInfo = [
+      result.cv.email,
+      result.cv.phone,
+      ...(result.cv.links || []),
+    ]
+      .filter(Boolean)
+      .join(" | ");
+
+    const htmlContent = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <title>Cover Letter - ${result.cv.full_name}</title>
+        <!--[if gte mso 9]>
+        <xml>
+          <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>100</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+          </w:WordDocument>
+        </xml>
+        <![endif]-->
+        <style>
+          @page {
+            size: 8.5in 11in;
+            margin: 1.0in 1.0in 1.0in 1.0in;
+          }
+          body {
+            font-family: 'Arial', sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #333333;
+          }
+          .header {
+            border-bottom: 1px solid #cccccc;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+          }
+          .name {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #111111;
+            text-transform: uppercase;
+            margin: 0;
+          }
+          .contact {
+            font-size: 9.5pt;
+            color: #666666;
+            margin-top: 5px;
+            margin-bottom: 0;
+          }
+          .date {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            color: #555555;
+          }
+          .paragraph {
+            margin-bottom: 12pt;
+            text-align: justify;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1 class="name">${result.cv.full_name}</h1>
+          <p class="contact">${contactInfo}</p>
+        </div>
+        <p class="date">${formattedDate}</p>
+        ${paragraphs.map((p) => `<p class="paragraph">${p}</p>`).join("")}
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(["\ufeff" + htmlContent], {
+      type: "application/msword",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${result.cv.full_name.replace(/\s+/g, "_")}_Cover_Letter.doc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,129 +388,535 @@ export default function CvCreationPage() {
     }
   };
 
+  if (!isMounted) {
+    return (
+      <div className="relative min-h-screen bg-cornsilk font-sans text-slate-800 antialiased">
+        <header className="sticky top-0 z-50 w-full border-b border-white/30 bg-white/20 backdrop-blur-lg">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 md:px-8">
+            <div className="flex items-center gap-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-light-bronze text-white shadow-md">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <span className="text-xl font-extrabold tracking-tight text-slate-900">
+                Tailor<span className="text-light-bronze font-black">CV</span>
+              </span>
+            </div>
+          </div>
+        </header>
+        <div className="max-w-7xl mx-auto px-6 py-12 text-center text-slate-500">
+          Loading workspace components...
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-5xl mx-auto p-8 space-y-8">
-      <header className="border-b pb-4">
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-          AI CV Tailor Workspace
-        </h1>
-        <p className="text-slate-500 mt-1">
-          Transform your base experience into highly focused, job-targeted
-          professional assets instantly.
-        </p>
+    <div className="relative min-h-screen overflow-x-hidden bg-cornsilk font-sans text-slate-800 antialiased selection:bg-tea-green pb-16">
+      <FloatingBlobs />
+
+      {/* STICKY WORKSPACE NAVIGATION */}
+      <header className="sticky top-0 z-50 w-full border-b border-white/30 bg-white/20 backdrop-blur-lg transition-all duration-300">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 md:px-8">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-light-bronze text-white shadow-md shadow-light-bronze/20 transition-transform group-hover:scale-105">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <span className="text-xl font-extrabold tracking-tight text-slate-900">
+              Tailor<span className="text-light-bronze font-black">CV</span>
+            </span>
+          </Link>
+
+          {/* Navigation Links */}
+          <nav className="flex items-center gap-4">
+            <Link
+              href="/"
+              className="text-sm font-bold text-slate-600 transition-colors hover:text-light-bronze flex items-center gap-1.5"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Home
+            </Link>
+          </nav>
+        </div>
       </header>
 
-      {!result ? (
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6 bg-white p-6 rounded-xl border shadow-sm"
-        >
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Upload Your Current CV (PDF)
-            </label>
-            <input
-              type="file"
-              accept=".pdf"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
-              className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Target Job Description & Requirements
-            </label>
-            <textarea
-              rows={8}
-              value={jobDesc}
-              onChange={(e) => setJobDesc(e.target.value)}
-              placeholder="Paste the company overview, core job duties, and tech stack criteria here..."
-              className="w-full p-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-slate-900 text-white font-medium text-sm py-3 rounded-lg hover:bg-slate-800 disabled:bg-slate-300 transition-colors"
-          >
-            {loading
-              ? "Analyzing & Compiling Documents..."
-              : "Tailor CV & Cover Letter"}
-          </button>
-        </form>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Action & Preview Left Column */}
-          <div className="space-y-6">
-            <div className="p-6 bg-emerald-50 border border-emerald-200 rounded-xl space-y-4">
-              <h3 className="font-bold text-emerald-900">
-                Your Tailored Assets are Ready!
-              </h3>
-
-              <div className="flex flex-col gap-3">
-                <PDFDownloadLink
-                  document={<CVDocument data={result.cv} />}
-                  fileName={`${result.cv.full_name.replace(/\s+/g, "_")}_Tailored_CV.pdf`}
-                  className="bg-emerald-600 text-white text-center text-sm font-medium py-2 px-4 rounded-lg hover:bg-emerald-700 transition"
+      {/* MAIN CONTAINER WORKSPACE */}
+      <main className="relative z-10 mx-auto max-w-7xl px-6 py-12 md:px-8">
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="py-12"
+            >
+              <LoadingScreen />
+            </motion.div>
+          ) : !result ? (
+            <motion.div
+              key="input"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              className="space-y-8"
+            >
+              {/* Header Title Section */}
+              <div className="text-center max-w-3xl mx-auto mb-10">
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/40 bg-tea-green px-4 py-1.5 text-xs font-semibold text-slate-800 shadow-sm mb-4"
                 >
-                  {({ loading }) =>
-                    loading ? "Preparing PDF..." : "Download Tailored CV (PDF)"
-                  }
-                </PDFDownloadLink>
-              </div>
-            </div>
-
-            <div className="p-6 border rounded-xl bg-white space-y-3">
-              <h3 className="font-bold text-slate-900">
-                Generated Cover Letter
-              </h3>
-              <div className="whitespace-pre-wrap text-sm text-slate-600 bg-slate-50 p-4 rounded-lg leading-relaxed border max-h-[400px] overflow-y-auto">
-                {result.cover_letter}
-              </div>
-            </div>
-          </div>
-
-          {/* Structured CV UI Editor Panel Right Column */}
-          <div className="p-6 border rounded-xl bg-white space-y-4">
-            <h3 className="font-bold text-slate-900">CV Component Review</h3>
-            <div className="space-y-4 text-sm">
-              <div>
-                <span className="font-semibold block text-slate-500">
-                  Target Role Title
-                </span>
-                <p className="text-slate-800 font-medium">
-                  {result.cv.experience[0]?.role || "N/A"}
+                  <Sparkles className="h-3.5 w-3.5 text-slate-800 animate-pulse" />
+                  AI-Powered Application Tailoring Workspace
+                </motion.div>
+                <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                  Optimize Your Professional Assets
+                </h1>
+                <p className="text-slate-600 mt-3 text-sm sm:text-base leading-relaxed">
+                  Upload your current resume and paste the job description to
+                  tailor your CV and cover letter for high conversion.
                 </p>
               </div>
-              <div>
-                <span className="font-semibold block text-slate-500">
-                  Summary Context alignment
-                </span>
-                <p className="text-slate-700 italic mt-1 bg-slate-50 p-3 rounded border">
-                  {result.cv.professional_summary}
-                </p>
+
+              {/* Input panels */}
+              <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+                  {/* Left Panel: File Upload */}
+                  <div className="flex flex-col justify-between rounded-3xl border border-white/50 bg-white/30 p-6 shadow-xl backdrop-blur-md">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-1.5">
+                          1. Upload Your Current CV (PDF)
+                        </label>
+                        <p className="text-xs text-slate-500 mb-4">
+                          We will extract your experience data to align it with
+                          the target job.
+                        </p>
+                      </div>
+
+                      {/* Drag & Drop Area */}
+                      <div
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        className={`relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 text-center transition-all min-h-[220px] ${
+                          isDragging
+                            ? "border-light-bronze bg-light-bronze/10 scale-102"
+                            : "border-slate-300 hover:border-light-bronze bg-white/60 hover:bg-white cursor-pointer"
+                        }`}
+                      >
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          onChange={handleFileChange}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        {!file ? (
+                          <>
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-papaya-whip text-light-bronze mb-4">
+                              <UploadCloud className="h-6 w-6" />
+                            </div>
+                            <h3 className="text-sm font-bold text-slate-900">
+                              Drag & Drop your Resume
+                            </h3>
+                            <p className="mt-1 text-xs text-slate-500">
+                              Supports PDF format up to 5MB
+                            </p>
+                            <span className="mt-4 rounded-lg bg-light-bronze px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-light-bronze-hover transition-all">
+                              Browse Files
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-tea-green text-slate-800 mb-4">
+                              <FileCheck className="h-6 w-6 text-slate-800" />
+                            </div>
+                            <h3 className="text-sm font-bold text-slate-900 truncate max-w-[220px]">
+                              {file.name}
+                            </h3>
+                            <p className="mt-1 text-xs text-slate-500 font-semibold">
+                              {formatFileSize(file.size)}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setFile(null);
+                              }}
+                              className="mt-4 rounded-lg bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-700 px-3 py-1.5 text-xs font-bold transition-all flex items-center gap-1.5 z-10"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                              Remove File
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Panel: Job Description Input */}
+                  <div className="rounded-3xl border border-white/50 bg-white/30 p-6 shadow-xl backdrop-blur-md flex flex-col justify-between">
+                    <div className="space-y-4 h-full flex flex-col">
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-1.5">
+                          2. Target Job Description & Requirements
+                        </label>
+                        <p className="text-xs text-slate-500 mb-4">
+                          Paste the job details to identify key keywords and
+                          requirements.
+                        </p>
+                      </div>
+
+                      <textarea
+                        rows={8}
+                        value={jobDesc}
+                        onChange={(e) => setJobDesc(e.target.value)}
+                        placeholder="Paste the company overview, core job duties, and tech stack criteria here..."
+                        className="w-full flex-1 p-4 rounded-2xl border border-white/50 bg-white/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-light-bronze text-slate-800 placeholder-slate-400 text-sm transition-all shadow-inner resize-none min-h-[220px]"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Submit Action */}
+                <div className="flex justify-center mt-8">
+                  <button
+                    type="submit"
+                    disabled={!file || !jobDesc}
+                    className="group inline-flex items-center justify-center gap-2 rounded-xl bg-light-bronze hover:bg-light-bronze-hover disabled:bg-slate-300 text-white font-bold text-base px-8 py-4 shadow-xl shadow-light-bronze/25 disabled:shadow-none hover:shadow-light-bronze/35 hover:-translate-y-0.5 disabled:hover:translate-y-0 transition-all cursor-pointer"
+                  >
+                    <span>Tailor CV & Cover Letter</span>
+                    <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1 group-disabled:translate-x-0" />
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="result"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              className="space-y-6"
+            >
+              {/* Back Link Row */}
+              <div className="flex justify-between items-center">
+                <button
+                  onClick={() => setResult(null)}
+                  className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-light-bronze bg-white/60 border border-white/50 px-3 py-2 rounded-xl transition-all hover:-translate-y-0.5 active:translate-y-0 shadow-sm cursor-pointer"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  Tailor New Application
+                </button>
               </div>
-              <div>
-                <span className="font-semibold block text-slate-500">
-                  Extracted & Tailored Skill Tags
-                </span>
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {result.cv.skills.map((skill, i) => (
-                    <span
-                      key={i}
-                      className="bg-slate-100 text-slate-800 px-2 py-1 rounded text-xs font-mono"
+
+              {/* TWO COLUMN WORKSPACE DASHBOARD */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                {/* LEFT SIDE PANEL: COMPONENT & REVIEW CONTAINER */}
+                <div className="rounded-3xl border border-white/50 bg-white/30 p-6 shadow-xl backdrop-blur-md flex flex-col h-[700px]">
+                  {/* Title & ATS Match Indicator */}
+                  <div className="flex items-center justify-between gap-4 mb-6">
+                    <div className="space-y-1">
+                      <span className="text-[10px] bg-emerald-100 border border-emerald-200 text-emerald-800 px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">
+                        Assets Optimized
+                      </span>
+                      <h2 className="text-xl font-extrabold text-slate-900 mt-1.5">
+                        {result.cv.experience[0]?.role || "Target Role"} Review
+                      </h2>
+                    </div>
+                    <div className="rounded-2xl bg-emerald-600 px-4 py-3 text-white shadow-lg shadow-emerald-600/20 flex flex-col items-center">
+                      <TrendingUp className="h-5 w-5" />
+                      <span className="text-lg font-black mt-0.5">98%</span>
+                      <span className="text-[8px] font-bold opacity-80 uppercase tracking-widest">
+                        ATS Match
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Navigation Tab Selector */}
+                  <div className="flex border-b border-slate-200/50 mb-6 gap-2">
+                    <button
+                      onClick={() => handleReviewTabChange("cv")}
+                      className={`pb-3 px-2 text-sm font-bold border-b-2 transition-all cursor-pointer ${
+                        activeReviewTab === "cv"
+                          ? "border-light-bronze text-light-bronze"
+                          : "border-transparent text-slate-500 hover:text-slate-800"
+                      }`}
                     >
-                      {skill}
-                    </span>
-                  ))}
+                      Optimized CV Review
+                    </button>
+                    <button
+                      onClick={() => handleReviewTabChange("cl")}
+                      className={`pb-3 px-2 text-sm font-bold border-b-2 transition-all cursor-pointer ${
+                        activeReviewTab === "cl"
+                          ? "border-light-bronze text-light-bronze"
+                          : "border-transparent text-slate-500 hover:text-slate-800"
+                      }`}
+                    >
+                      Cover Letter Content
+                    </button>
+                  </div>
+
+                  {/* Active tab content area */}
+                  <div className="flex-1 overflow-y-auto pr-1">
+                    {activeReviewTab === "cv" ? (
+                      <div className="space-y-6">
+                        {/* Target Role & Summary Context */}
+                        <div className="bg-white/60 border border-white/50 p-5 rounded-2xl shadow-sm space-y-4">
+                          <div>
+                            <span className="font-bold text-xs text-slate-400 uppercase tracking-wider block">
+                              Target Role Title
+                            </span>
+                            <p className="text-slate-800 font-bold text-base mt-1">
+                              {result.cv.experience[0]?.role || "N/A"}
+                            </p>
+                          </div>
+                          <div className="border-t border-slate-200/50 pt-3">
+                            <span className="font-bold text-xs text-slate-400 uppercase tracking-wider block mb-1">
+                              Professional Summary Context
+                            </span>
+                            <p className="text-slate-700 italic text-sm leading-relaxed">
+                              &ldquo;{result.cv.professional_summary}&rdquo;
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Optimised Skills */}
+                        <div className="bg-white/60 border border-white/50 p-5 rounded-2xl shadow-sm space-y-3">
+                          <span className="font-bold text-xs text-slate-400 uppercase tracking-wider block">
+                            Extracted & Tailored Skill Tags
+                          </span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {result.cv.skills.map((skill, i) => (
+                              <span
+                                key={i}
+                                className="bg-white/80 border border-slate-200 text-slate-700 px-2.5 py-1 rounded-lg text-xs font-semibold hover:border-light-bronze/40 transition-colors shadow-sm"
+                              >
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Experience timeline */}
+                        <div className="space-y-4">
+                          <span className="font-bold text-xs text-slate-400 uppercase tracking-wider block">
+                            Experience Alignment Highlights
+                          </span>
+                          <div className="space-y-4">
+                            {result.cv.experience.map((exp, i) => (
+                              <div
+                                key={i}
+                                className="bg-white/60 border border-white/50 p-5 rounded-2xl shadow-sm"
+                              >
+                                <div className="flex justify-between items-start gap-4">
+                                  <div>
+                                    <h4 className="font-extrabold text-slate-900 text-sm">
+                                      {exp.role}
+                                    </h4>
+                                    <p className="text-xs text-light-bronze font-bold">
+                                      {exp.company}
+                                    </p>
+                                  </div>
+                                  <span className="text-[10px] bg-light-bronze/10 text-light-bronze px-2.5 py-1 rounded-full font-bold whitespace-nowrap">
+                                    {exp.duration}
+                                  </span>
+                                </div>
+                                <ul className="mt-4 space-y-2 text-xs text-slate-600 list-disc pl-4 leading-relaxed">
+                                  {exp.bullet_points.map((bullet, idx) => (
+                                    <li key={idx}>{bullet}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4 h-full flex flex-col">
+                        <div className="flex justify-between items-center bg-white/40 border border-white/40 p-3 rounded-2xl">
+                          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">
+                            Cover Letter Content
+                          </span>
+                          <div className="flex gap-2 relative">
+                            {/* Copy Button */}
+                            <button
+                              onClick={handleCopy}
+                              className="flex items-center gap-1.5 bg-white/80 border border-white/60 hover:bg-white text-slate-700 hover:text-slate-900 text-xs font-bold px-3 py-2 rounded-xl shadow-sm hover:shadow active:scale-95 transition-all cursor-pointer"
+                            >
+                              {copied ? (
+                                <>
+                                  <Check className="h-3.5 w-3.5 text-emerald-600" />
+                                  <span className="text-emerald-600">
+                                    Copied
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="h-3.5 w-3.5" />
+                                  <span>Copy Text</span>
+                                </>
+                              )}
+                            </button>
+
+                            {/* Download Dropdown */}
+                            <div className="relative">
+                              <button
+                                onClick={() =>
+                                  setDownloadDropdownOpen(!downloadDropdownOpen)
+                                }
+                                className="flex items-center gap-1.5 bg-light-bronze hover:bg-light-bronze-hover text-white text-xs font-bold px-3 py-2 rounded-xl shadow-md hover:shadow-lg active:scale-95 transition-all cursor-pointer"
+                              >
+                                <Download className="h-3.5 w-3.5" />
+                                <span>Download</span>
+                                <ChevronDown className="h-3.5 w-3.5" />
+                              </button>
+
+                              <AnimatePresence>
+                                {downloadDropdownOpen && (
+                                  <>
+                                    <div
+                                      className="fixed inset-0 z-10"
+                                      onClick={() =>
+                                        setDownloadDropdownOpen(false)
+                                      }
+                                    />
+                                    <motion.div
+                                      initial={{ opacity: 0, y: 10 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      exit={{ opacity: 0, y: 10 }}
+                                      className="absolute right-0 mt-1.5 w-48 rounded-xl border border-white/40 bg-white shadow-xl backdrop-blur-md z-20 overflow-hidden"
+                                    >
+                                      <div className="flex flex-col">
+                                        <PDFDownloadLink
+                                          document={
+                                            <CoverLetterDocument
+                                              cv={result.cv}
+                                              coverLetterText={
+                                                result.cover_letter
+                                              }
+                                            />
+                                          }
+                                          fileName={`${result.cv.full_name.replace(/\s+/g, "_")}_Cover_Letter.pdf`}
+                                          className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                                          onClick={() =>
+                                            setDownloadDropdownOpen(false)
+                                          }
+                                        >
+                                          {({ loading }) => (
+                                            <>
+                                              <FileText className="h-4 w-4 text-slate-500" />
+                                              <span>
+                                                {loading
+                                                  ? "Preparing PDF..."
+                                                  : "Download as PDF"}
+                                              </span>
+                                            </>
+                                          )}
+                                        </PDFDownloadLink>
+
+                                        <button
+                                          onClick={() => {
+                                            handleDownloadDoc();
+                                            setDownloadDropdownOpen(false);
+                                          }}
+                                          className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer border-t border-slate-100"
+                                        >
+                                          <FileText className="h-4 w-4 text-slate-500" />
+                                          <span>Download as Word (.DOC)</span>
+                                        </button>
+                                      </div>
+                                    </motion.div>
+                                  </>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Plain text display */}
+                        <div className="flex-1 whitespace-pre-wrap text-sm text-slate-600 bg-white/70 border border-white/50 p-5 rounded-2xl leading-relaxed shadow-inner max-h-[480px] overflow-y-auto">
+                          {result.cover_letter}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* RIGHT SIDE PANEL: LIVE DOCUMENT PREVIEW */}
+                <div className="rounded-3xl border border-white/50 bg-white/30 p-6 shadow-xl backdrop-blur-md flex flex-col h-[700px]">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-light-bronze" />
+                      <h3 className="font-extrabold text-slate-900 text-sm">
+                        Live PDF Document Preview
+                      </h3>
+                    </div>
+
+                    {/* PDF Document Selector */}
+                    <div className="flex bg-white/50 p-1 rounded-xl border border-white/40 gap-1">
+                      <button
+                        onClick={() => setActivePreviewTab("cv")}
+                        className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                          activePreviewTab === "cv"
+                            ? "bg-light-bronze text-white shadow-sm"
+                            : "text-slate-500 hover:text-slate-800"
+                        }`}
+                      >
+                        CV Preview
+                      </button>
+                      <button
+                        onClick={() => setActivePreviewTab("cl")}
+                        className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                          activePreviewTab === "cl"
+                            ? "bg-light-bronze text-white shadow-sm"
+                            : "text-slate-500 hover:text-slate-800"
+                        }`}
+                      >
+                        Cover Letter Preview
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Render dynamic PDF compiler */}
+                  <div className="flex-1">
+                    <PDFPreviewPanel
+                      cv={result.cv}
+                      coverLetterText={result.cover_letter}
+                      activePreviewTab={activePreviewTab}
+                    />
+                  </div>
+
+                  {/* Immediate Download CV Bar at Bottom */}
+                  {activePreviewTab === "cv" && (
+                    <div className="mt-4">
+                      <PDFDownloadLink
+                        document={<CVDocument data={result.cv} />}
+                        fileName={`${result.cv.full_name.replace(/\s+/g, "_")}_Tailored_CV.pdf`}
+                        className="flex w-full items-center justify-center gap-2 bg-light-bronze hover:bg-light-bronze-hover text-white text-center text-sm font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all active:scale-98"
+                      >
+                        {({ loading }) => (
+                          <>
+                            <Download className="h-4 w-4" />
+                            <span>
+                              {loading
+                                ? "Compiling PDF..."
+                                : "Download Tailored CV (PDF)"}
+                            </span>
+                          </>
+                        )}
+                      </PDFDownloadLink>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
     </div>
   );
 }
