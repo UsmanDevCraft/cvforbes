@@ -1,8 +1,9 @@
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { useAlert } from "@/src/context/AlertContext";
 import { formatFileSize } from "@/src/lib/helper";
 import { FinalTailoredOutput } from "@/src/types/cv_template";
-import { motion } from "framer-motion";
 import { Sparkles, ArrowRight, UploadCloud, X, FileCheck } from "lucide-react";
-import { useState } from "react";
 
 const FileUploadForm = ({
   setLoading,
@@ -11,6 +12,7 @@ const FileUploadForm = ({
   setLoading: (loading: boolean) => void;
   setResult: (result: FinalTailoredOutput) => void;
 }) => {
+  const { showAlert } = useAlert();
   const [file, setFile] = useState<File | null>(null);
   const [jobDesc, setJobDesc] = useState("");
   const [isDragging, setIsDragging] = useState(false);
@@ -35,7 +37,11 @@ const FileUploadForm = ({
       ) {
         setFile(droppedFile);
       } else {
-        alert("Only PDF files are supported!");
+        showAlert(
+          "warning",
+          "Invalid File Type",
+          "Only PDF files are supported!",
+        );
       }
     }
   };
@@ -49,7 +55,11 @@ const FileUploadForm = ({
       ) {
         setFile(selectedFile);
       } else {
-        alert("Only PDF files are supported!");
+        showAlert(
+          "warning",
+          "Invalid File Type",
+          "Only PDF files are supported!",
+        );
       }
     }
   };
@@ -57,7 +67,11 @@ const FileUploadForm = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file || !jobDesc)
-      return alert("Please upload a CV and paste job requirements.");
+      return showAlert(
+        "warning",
+        "Missing File/Job Description",
+        "Please upload a CV and paste job requirements.",
+      );
 
     setLoading(true);
     const formData = new FormData();
@@ -77,7 +91,11 @@ const FileUploadForm = ({
       setResult(data);
     } catch (err) {
       console.error(err);
-      alert("An error occurred while compiling assets.");
+      showAlert(
+        "error",
+        "Generation Failed",
+        "An error occurred while compiling assets.",
+      );
     } finally {
       setLoading(false);
     }

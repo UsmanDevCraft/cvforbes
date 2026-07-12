@@ -51,7 +51,7 @@ const Navbar = () => {
           {/* CTA Button */}
           <div className="hidden items-center gap-4 md:flex">
             <Link
-              href="/workspace"
+              href="/makeyourcv"
               className="inline-flex items-center justify-center rounded-xl bg-light-bronze px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-light-bronze/25 transition-all duration-300 hover:bg-light-bronze-hover hover:shadow-light-bronze/35 hover:-translate-y-0.5 active:translate-y-0"
             >
               Get Started
@@ -107,7 +107,7 @@ const Navbar = () => {
                   Roadmap
                 </a>
                 <Link
-                  href="/workspace"
+                  href="/makeyourcv"
                   className="mt-2 inline-flex w-full items-center justify-center rounded-xl bg-light-bronze py-3 text-center text-sm font-bold text-white shadow-md shadow-light-bronze/20 hover:bg-light-bronze-hover"
                 >
                   Get Started

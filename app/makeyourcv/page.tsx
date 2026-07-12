@@ -5,6 +5,6 @@ const CvCreationPage = dynamic(() => import("@/src/view/CvCreationPage"), {
   loading: () => <LoadingScreen />,
 });
 
-export default function WorkspacePage() {
+export default function MakeYourCvPage() {
   return <CvCreationPage />;
 }

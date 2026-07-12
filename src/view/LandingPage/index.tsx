@@ -100,8 +100,7 @@ export default function LandingPage() {
     setIsUploading(true);
     setTimeout(() => {
       setIsUploading(false);
-      // Route user to workspace
-      router.push("/workspace");
+      router.push("/makeyourcv");
     }, 1800);
   };
 
@@ -162,7 +161,7 @@ export default function LandingPage() {
               className="mt-10 flex flex-wrap items-center gap-5"
             >
               <Link
-                href="/workspace"
+                href="/makeyourcv"
                 className="group inline-flex items-center justify-center gap-2 rounded-xl bg-light-bronze px-8 py-4 text-base font-bold text-white shadow-xl shadow-light-bronze/25 transition-all duration-300 hover:bg-light-bronze-hover hover:shadow-light-bronze/35 hover:-translate-y-1 active:translate-y-0"
               >
                 Tailor Your CV Now
@@ -752,7 +751,7 @@ export default function LandingPage() {
                 </ul>
               </div>
               <Link
-                href="/workspace"
+                href="/makeyourcv"
                 className="mt-8 inline-flex w-full items-center justify-center rounded-xl border border-slate-900/10 bg-white px-6 py-3.5 text-center text-sm font-bold text-slate-800 shadow-sm transition-all hover:bg-slate-50"
               >
                 Get Started Free
@@ -798,7 +797,7 @@ export default function LandingPage() {
                 </ul>
               </div>
               <Link
-                href="/workspace"
+                href="/makeyourcv"
                 className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-light-bronze px-6 py-3.5 text-center text-sm font-bold text-white shadow-lg shadow-light-bronze/25 transition-all hover:bg-light-bronze-hover"
               >
                 Go Pro Now
@@ -1067,7 +1066,7 @@ export default function LandingPage() {
                   <button
                     onClick={() => {
                       setDemoOpen(false);
-                      router.push("/workspace");
+                      router.push("/makeyourcv");
                     }}
                     className="rounded-lg bg-light-bronze px-4 py-1.5 text-xs font-bold text-white hover:bg-light-bronze-hover"
                   >

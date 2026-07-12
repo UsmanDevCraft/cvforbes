@@ -1,1 +1,22 @@
 export type ProductTabs = "rewriter" | "cover" | "ats";
+
+export type AlertType = "success" | "error" | "warning" | "info";
+
+export interface Alert {
+  id: string;
+  type: AlertType;
+  title: string;
+  message?: string;
+}
+
+export interface AlertContextType {
+  showAlert: (type: AlertType, title: string, message?: string) => void;
+
+  removeAlert: (id: string) => void;
+
+  alerts: Alert[];
+}
+
+export interface AlertProps {
+  alert: Alert;
+}

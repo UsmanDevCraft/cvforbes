@@ -1,5 +1,7 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { AlertProvider } from "@/src/context/AlertContext";
+import AlertContainer from "@/src/components/shared/Alert/AlertContainer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -20,7 +22,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`h-full antialiased ${inter.variable}`}>
       <body className="min-h-full flex flex-col bg-cornsilk font-sans text-slate-800 selection:bg-tea-green">
-        {children}
+        <AlertProvider>
+          {children}
+          <AlertContainer />
+        </AlertProvider>
       </body>
     </html>
   );
