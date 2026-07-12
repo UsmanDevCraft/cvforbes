@@ -4,6 +4,10 @@ import { useAlert } from "@/src/context/AlertContext";
 import { formatFileSize } from "@/src/lib/helper";
 import { FinalTailoredOutput } from "@/src/types/cv_template";
 import { Sparkles, ArrowRight, UploadCloud, X, FileCheck } from "lucide-react";
+import { toFormikValidationSchema } from "zod-formik-adapter";
+import { useFormik } from "formik";
+import { tailorCvSchema } from "@/src/schema/tailorCvSchema";
+import { FormValues, initialValues } from "@/src/types/shared";
 
 const FileUploadForm = ({
   setLoading,
@@ -13,8 +17,6 @@ const FileUploadForm = ({
   setResult: (result: FinalTailoredOutput) => void;
 }) => {
   const { showAlert } = useAlert();
-  const [file, setFile] = useState<File | null>(null);
-  const [jobDesc, setJobDesc] = useState("");
   const [isDragging, setIsDragging] = useState(false);
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -35,7 +37,7 @@ const FileUploadForm = ({
         droppedFile.type === "application/pdf" ||
         droppedFile.name.endsWith(".pdf")
       ) {
-        setFile(droppedFile);
+        formik.setFieldValue("file", droppedFile);
       } else {
         showAlert(
           "warning",
@@ -53,7 +55,7 @@ const FileUploadForm = ({
         selectedFile.type === "application/pdf" ||
         selectedFile.name.endsWith(".pdf")
       ) {
-        setFile(selectedFile);
+        formik.setFieldValue("file", selectedFile);
       } else {
         showAlert(
           "warning",
@@ -64,42 +66,48 @@ const FileUploadForm = ({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!file || !jobDesc)
-      return showAlert(
-        "warning",
-        "Missing File/Job Description",
-        "Please upload a CV and paste job requirements.",
-      );
+  const formik = useFormik<FormValues>({
+    initialValues,
+    validationSchema: toFormikValidationSchema(tailorCvSchema),
 
-    setLoading(true);
-    const formData = new FormData();
-    formData.append("cv_file", file);
-    formData.append("job_description", jobDesc);
+    onSubmit: async (values, { resetForm }) => {
+      setLoading(true);
 
-    try {
-      const response = await fetch("http://127.0.0.1:8000/api/tailor-cv", {
-        method: "POST",
-        body: formData,
-      });
+      const formData = new FormData();
 
-      if (!response.ok)
-        throw new Error("Failed to generate tailored CV assets.");
+      formData.append("cv_file", values.file!);
+      formData.append("job_description", values.jobDesc);
 
-      const data: FinalTailoredOutput = await response.json();
-      setResult(data);
-    } catch (err) {
-      console.error(err);
-      showAlert(
-        "error",
-        "Generation Failed",
-        "An error occurred while compiling assets.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/tailor-cv", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) throw new Error();
+
+        const data: FinalTailoredOutput = await response.json();
+
+        setResult(data);
+
+        showAlert(
+          "success",
+          "Resume Generated",
+          "Your tailored assets are ready.",
+        );
+
+        resetForm();
+      } catch {
+        showAlert(
+          "error",
+          "Generation Failed",
+          "An error occurred while compiling assets.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+  });
 
   return (
     <motion.div
@@ -129,7 +137,7 @@ const FileUploadForm = ({
       </div>
 
       {/* Input panels */}
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={formik.handleSubmit} className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
           {/* Left Panel: File Upload */}
           <div className="flex flex-col justify-between rounded-3xl border border-white/50 bg-white/30 p-6 shadow-xl backdrop-blur-md">
@@ -157,11 +165,18 @@ const FileUploadForm = ({
               >
                 <input
                   type="file"
+                  name="file"
                   accept=".pdf"
                   onChange={handleFileChange}
+                  onBlur={formik.handleBlur}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
-                {!file ? (
+                {formik.touched.file && formik.errors.file && (
+                  <p className="mt-2 text-sm text-red-500">
+                    {formik.errors.file}
+                  </p>
+                )}
+                {!formik.values.file ? (
                   <>
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-papaya-whip text-light-bronze mb-4">
                       <UploadCloud className="h-6 w-6" />
@@ -182,17 +197,17 @@ const FileUploadForm = ({
                       <FileCheck className="h-6 w-6 text-slate-800" />
                     </div>
                     <h3 className="text-sm font-bold text-slate-900 truncate max-w-[220px]">
-                      {file.name}
+                      {formik.values.file.name}
                     </h3>
                     <p className="mt-1 text-xs text-slate-500 font-semibold">
-                      {formatFileSize(file.size)}
+                      {formatFileSize(formik.values.file.size ?? 0)}
                     </p>
                     <button
                       type="button"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        setFile(null);
+                        formik.setFieldValue("file", null);
                       }}
                       className="mt-4 rounded-lg bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-700 px-3 py-1.5 text-xs font-bold transition-all flex items-center gap-1.5 z-10"
                     >
@@ -220,11 +235,18 @@ const FileUploadForm = ({
 
               <textarea
                 rows={8}
-                value={jobDesc}
-                onChange={(e) => setJobDesc(e.target.value)}
+                name="jobDesc"
+                value={formik.values.jobDesc}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
                 placeholder="Paste the company overview, core job duties, and tech stack criteria here..."
                 className="w-full flex-1 p-4 rounded-2xl border border-white/50 bg-white/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-light-bronze text-slate-800 placeholder-slate-400 text-sm transition-all shadow-inner resize-none min-h-[220px]"
               />
+              {formik.touched.jobDesc && formik.errors.jobDesc && (
+                <p className="mt-2 text-sm text-red-500">
+                  {formik.errors.jobDesc}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -233,7 +255,7 @@ const FileUploadForm = ({
         <div className="flex justify-center mt-8">
           <button
             type="submit"
-            disabled={!file || !jobDesc}
+            disabled={!formik.dirty || !formik.isValid || formik.isSubmitting}
             className="group inline-flex items-center justify-center gap-2 rounded-xl bg-light-bronze hover:bg-light-bronze-hover disabled:bg-slate-300 text-white font-bold text-base px-8 py-4 shadow-xl shadow-light-bronze/25 disabled:shadow-none hover:shadow-light-bronze/35 hover:-translate-y-0.5 disabled:hover:translate-y-0 transition-all cursor-pointer"
           >
             <span>Tailor CV & Cover Letter</span>

@@ -20,3 +20,13 @@ export interface AlertContextType {
 export interface AlertProps {
   alert: Alert;
 }
+
+export interface FormValues {
+  file: File | null;
+  jobDesc: string;
+}
+
+export const initialValues: FormValues = {
+  file: null,
+  jobDesc: "",
+};
