@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles,
@@ -23,6 +23,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CometCard from "@/src/components/CometCard";
 import Navbar from "@/src/components/shared/Navbar";
+import { ProductTabs } from "@/src/types/shared";
 
 // Floating background blobs component for organic visual depth
 const FloatingBlobs = () => (
@@ -38,9 +39,26 @@ export default function LandingPage() {
   const [demoOpen, setDemoOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"rewriter" | "cover" | "ats">(
-    "rewriter",
-  );
+  const [activeTab, setActiveTab] = useState<ProductTabs>("rewriter");
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const productTabs: ProductTabs[] = ["rewriter", "cover", "ats"];
+
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      setActiveTab((prev) => {
+        const currentIndex = productTabs.indexOf(prev);
+        const nextIndex = (currentIndex + 1) % productTabs.length;
+        return productTabs[nextIndex];
+      });
+    }, 4000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
 
   // Prevent scroll when demo video modal is open
   useEffect(() => {
@@ -379,9 +397,15 @@ export default function LandingPage() {
               return (
                 <button
                   key={tab.id}
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all ${
+                  onClick={() => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    setActiveTab(tab.id as any);
+                    if (intervalRef.current) {
+                      clearInterval(intervalRef.current);
+                      intervalRef.current = null;
+                    }
+                  }}
+                  className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all cursor-pointer ${
                     activeTab === tab.id
                       ? "bg-light-bronze text-white shadow-md shadow-light-bronze/10"
                       : "border border-white/40 bg-white/30 text-slate-600 hover:bg-white/50"
