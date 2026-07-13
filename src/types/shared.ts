@@ -30,3 +30,11 @@ export const initialValues: FormValues = {
   file: null,
   jobDesc: "",
 };
+
+export interface Testimonial {
+  name: string;
+  role: string;
+  text: string;
+  rating: number;
+  avatar: string;
+}

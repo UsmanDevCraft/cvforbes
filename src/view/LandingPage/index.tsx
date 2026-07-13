@@ -22,6 +22,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CometCard from "@/src/components/CometCard";
+import Testimonials from "@/src/components/Testimonials";
 import Navbar from "@/src/components/shared/Navbar";
 import { ProductTabs } from "@/src/types/shared";
 
@@ -699,6 +700,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* CLIENT TESTIMONIALS SECTION */}
+      <Testimonials />
 
       {/* PRICING SECTION */}
       <section
