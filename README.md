@@ -2,9 +2,11 @@
 
 > **Transform generic resumes into ATS-optimized, job-tailored applications in seconds.**
 
-CVForbes AI is a modern AI-powered web application that helps job seekers generate tailored resumes and personalized cover letters for specific job opportunities. Simply upload your existing resume, paste the target job description, and let AI optimize your application while preserving factual accuracy.
+CVForbes is a modern AI-powered web application that helps job seekers generate tailored resumes and personalized cover letters for specific job opportunities. Simply upload your existing resume, paste the target job description, and let AI optimize your application while preserving factual accuracy.
 
-This repository contains the **frontend** of CVForbes AI, built with **Next.js 16**, **React 19**, **TypeScript**, and **Tailwind CSS 4**, delivering a fast, responsive, and engaging user experience.
+<img width="1661" height="857" alt="Screenshot 2026-07-13 at 12 02 34 PM" src="https://github.com/user-attachments/assets/8840721b-c03e-4f7a-85ac-a829fdc294be" />
+
+This repository contains the **frontend** of CVForbes, built with **Next.js 16**, **React 19**, **TypeScript**, and **Tailwind CSS 4**, delivering a fast, responsive, and engaging user experience.
 
 ---
 
@@ -14,7 +16,7 @@ Most job seekers send the same resume to hundreds of companies.
 
 Modern Applicant Tracking Systems (ATS) don't simply look for experience—they look for relevance.
 
-CVForbes AI bridges that gap by intelligently rewriting existing resumes to emphasize the skills, technologies, and achievements most relevant to each specific job description without fabricating information.
+CVForbes bridges that gap by intelligently rewriting existing resumes to emphasize the skills, technologies, and achievements most relevant to each specific job description without fabricating information.
 
 Our goal is simple:
 
@@ -22,9 +24,9 @@ Our goal is simple:
 
 ---
 
-# 🚀 What CVForbes AI Does
+# 🚀 What CVForbes Does
 
-CVForbes AI allows users to:
+CVForbes allows users to:
 
 * Upload an existing resume (PDF)
 * Paste a target job description
@@ -304,7 +306,7 @@ http://localhost:3000
 
 # 🖥 Backend Dependency
 
-This frontend communicates with the **CVForbes AI Backend**, which provides:
+This frontend communicates with the **CVForbes Backend**, which provides:
 
 * Secure PDF processing
 * Resume parsing
@@ -346,7 +348,7 @@ Ensure the backend server is running before using the application.
 
 # 🗺 Product Roadmap
 
-The long-term vision for CVForbes AI extends beyond resume rewriting.
+The long-term vision for CVForbes extends beyond resume rewriting.
 
 Planned features include:
 
@@ -367,11 +369,11 @@ Planned features include:
 
 ---
 
-# 💡 Why CVForbes AI?
+# 💡 Why CVForbes?
 
 Most AI resume builders simply rewrite text.
 
-CVForbes AI was designed around a different philosophy:
+CVForbes was designed around a different philosophy:
 
 * Preserve factual integrity.
 * Optimize for ATS compatibility.
@@ -391,7 +393,7 @@ This project is intended for educational and commercial use. Feel free to modify
 
 # ❤️ Acknowledgements
 
-CVForbes AI was built as a full-stack AI application to explore modern software engineering practices, combining:
+CVForbes was built as a full-stack AI application to explore modern software engineering practices, combining:
 
 * Next.js
 * FastAPI
