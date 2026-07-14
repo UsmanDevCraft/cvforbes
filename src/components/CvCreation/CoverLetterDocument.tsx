@@ -71,7 +71,9 @@ export const CoverLetterDocument = ({
             <Text>{cv.email}</Text>
             {cv.phone && <Text>| {cv.phone}</Text>}
             {cv.links?.map((link, idx) => (
-              <Text key={idx}>| {link}</Text>
+              <Text key={idx}>
+                | {typeof link === "string" ? link : link.url}
+              </Text>
             ))}
           </View>
         </View>
