@@ -22,6 +22,7 @@ import { CVDocument } from "../../components/CvCreation/CvDocument";
 import { CoverLetterDocument } from "../../components/CvCreation/CoverLetterDocument";
 import CvCreationLoader from "../../components/CvCreation/CvCreationLoader";
 import FileUploadForm from "@/src/components/CvCreation/FileUploadForm";
+import { ResumeAnalytics } from "../../components/CvCreation/ResumeAnalytics";
 
 // Organic floating background blobs matching landing page
 const FloatingBlobs = () => (
@@ -288,6 +289,13 @@ export default function CvCreationPage() {
                 </button>
               </div>
 
+              {/* RESUME ANALYTICS SECTION */}
+              {result.analytics && (
+                <div className="bg-white/40 border border-white/50 p-6 rounded-3xl shadow-xl backdrop-blur-md">
+                  <ResumeAnalytics analytics={result.analytics} />
+                </div>
+              )}
+
               {/* TWO COLUMN WORKSPACE DASHBOARD */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                 {/* LEFT SIDE PANEL: COMPONENT & REVIEW CONTAINER */}
@@ -304,7 +312,9 @@ export default function CvCreationPage() {
                     </div>
                     <div className="rounded-2xl bg-emerald-600 px-4 py-3 text-white shadow-lg shadow-emerald-600/20 flex flex-col items-center">
                       <TrendingUp className="h-5 w-5" />
-                      <span className="text-lg font-black mt-0.5">98%</span>
+                      <span className="text-lg font-black mt-0.5">
+                        {result.analytics?.ats_score ?? 98}%
+                      </span>
                       <span className="text-[8px] font-bold opacity-80 uppercase tracking-widest">
                         ATS Match
                       </span>
@@ -630,7 +640,7 @@ export default function CvCreationPage() {
                     />
                   </div>
 
-                  {/* Immediate Download CV Bar at Bottom */}
+                  {/* Immediate Download Bar at Bottom */}
                   {activePreviewTab === "cv" && (
                     <div className="mt-4">
                       <PDFDownloadLink
@@ -645,6 +655,31 @@ export default function CvCreationPage() {
                               {loading
                                 ? "Compiling PDF..."
                                 : "Download Tailored CV (PDF)"}
+                            </span>
+                          </>
+                        )}
+                      </PDFDownloadLink>
+                    </div>
+                  )}
+                  {activePreviewTab === "cl" && (
+                    <div className="mt-4">
+                      <PDFDownloadLink
+                        document={
+                          <CoverLetterDocument
+                            cv={result.cv}
+                            coverLetterText={result.cover_letter}
+                          />
+                        }
+                        fileName={`${result.cv.full_name.replace(/\s+/g, "_")}_Cover_Letter.pdf`}
+                        className="flex w-full items-center justify-center gap-2 bg-light-bronze hover:bg-light-bronze-hover text-white text-center text-sm font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all active:scale-98"
+                      >
+                        {({ loading }) => (
+                          <>
+                            <Download className="h-4 w-4" />
+                            <span>
+                              {loading
+                                ? "Compiling PDF..."
+                                : "Download Cover Letter (PDF)"}
                             </span>
                           </>
                         )}
