@@ -3,8 +3,10 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Menu } from "lucide-react";
 import { SignInButton, SignUpButton, Show, UserButton } from "@clerk/nextjs";
+import { useIsAdmin } from "@/src/hooks/useIsAdmin";
 
 const Navbar = () => {
+  const { isAdmin } = useIsAdmin();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -47,6 +49,14 @@ const Navbar = () => {
             >
               Roadmap
             </a>
+            {isAdmin && (
+              <a
+                href="/dashboard"
+                className="text-sm font-semibold text-slate-600 transition-colors hover:text-light-bronze"
+              >
+                Dashboard
+              </a>
+            )}
           </nav>
 
           {/* Desktop Auth Controls */}
@@ -122,6 +132,14 @@ const Navbar = () => {
                 >
                   Roadmap
                 </a>
+                {isAdmin && (
+                  <a
+                    href="/dashboard"
+                    className="text-sm font-semibold text-slate-600 transition-colors hover:text-light-bronze"
+                  >
+                    Dashboard
+                  </a>
+                )}
 
                 <Show when="signed-out">
                   <div className="flex flex-col gap-2 mt-2">

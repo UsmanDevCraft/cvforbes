@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@clerk/nextjs";
 import {
   fetchAdminStats,
   fetchAdminAnalytics,
@@ -11,6 +12,8 @@ import {
 } from "../service/admin.service";
 
 export function useAdminDashboard() {
+  const { getToken } = useAuth();
+
   // Pagination states
   const [usersPage, setUsersPage] = useState<number>(1);
   const [generationsPage, setGenerationsPage] = useState<number>(1);
@@ -22,7 +25,8 @@ export function useAdminDashboard() {
   const statsQuery = useQuery({
     queryKey: ["admin", "stats"],
     queryFn: async () => {
-      return fetchAdminStats();
+      const token = await getToken();
+      return fetchAdminStats(token);
     },
     refetchInterval: autoRefreshInterval > 0 ? autoRefreshInterval : false,
     staleTime: 10000,
@@ -31,7 +35,8 @@ export function useAdminDashboard() {
   const analyticsQuery = useQuery({
     queryKey: ["admin", "analytics"],
     queryFn: async () => {
-      return fetchAdminAnalytics();
+      const token = await getToken();
+      return fetchAdminAnalytics(token);
     },
     refetchInterval: autoRefreshInterval > 0 ? autoRefreshInterval : false,
     staleTime: 10000,
@@ -40,7 +45,8 @@ export function useAdminDashboard() {
   const usersQuery = useQuery({
     queryKey: ["admin", "users", usersPage],
     queryFn: async () => {
-      return fetchAdminUsers(usersPage, 8);
+      const token = await getToken();
+      return fetchAdminUsers(token, usersPage, 8);
     },
     refetchInterval: autoRefreshInterval > 0 ? autoRefreshInterval : false,
     staleTime: 10000,
@@ -49,7 +55,8 @@ export function useAdminDashboard() {
   const generationsQuery = useQuery({
     queryKey: ["admin", "generations", generationsPage],
     queryFn: async () => {
-      return fetchAdminGenerations(generationsPage, 8);
+      const token = await getToken();
+      return fetchAdminGenerations(token, generationsPage, 8);
     },
     refetchInterval: autoRefreshInterval > 0 ? autoRefreshInterval : false,
     staleTime: 10000,
@@ -58,7 +65,8 @@ export function useAdminDashboard() {
   const bansQuery = useQuery({
     queryKey: ["admin", "bans", bansPage],
     queryFn: async () => {
-      return fetchAdminBans(bansPage, 8);
+      const token = await getToken();
+      return fetchAdminBans(token, bansPage, 8);
     },
     refetchInterval: autoRefreshInterval > 0 ? autoRefreshInterval : false,
     staleTime: 10000,
